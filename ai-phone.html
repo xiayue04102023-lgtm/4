@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI 小手机</title>
+<style>
+:root{--bg:#eceff4;--card:#fff;--ink:#1a2030;--sub:#7b8596;--line:#e1e5ec;--accent:#2b5cff;--accent2:#e8eeff;--danger:#d4402f}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;background:#c9cfda;color:var(--ink);height:100dvh;display:flex;align-items:center;justify-content:center}
+#phone{width:100%;max-width:410px;height:100dvh;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:500px){#phone{height:min(840px,96dvh);border-radius:40px;border:9px solid #12151d;box-shadow:0 24px 70px rgba(10,20,50,.35)}}
+#main{flex:1;min-height:0;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.bar{height:54px;display:flex;align-items:center;padding:0 10px 0 16px;gap:4px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
+.bar h1{font-size:17px;font-weight:650;flex:1}
+.bar button{background:none;border:0;font-size:20px;color:var(--ink);padding:6px 8px;cursor:pointer}
+.bar button[data-act=back]{font-size:28px;line-height:1;margin-left:-10px;color:var(--accent)}
+#tabs{flex:none;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{flex:1;border:0;background:none;padding:8px 0 7px;font-size:11px;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-family:inherit}
+#tabs button i{font-style:normal;font-size:21px;filter:grayscale(1);opacity:.7}
+#tabs button.on{color:var(--accent);font-weight:650}
+#tabs button.on i{filter:none;opacity:1}
+.item{display:flex;gap:12px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.item:active{background:#f5f7fb}
+.grow{flex:1;min-width:0;font-size:15px}
+.t1{font-size:15px;font-weight:550;display:flex;justify-content:space-between;gap:8px}
+.t2{font-size:12.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;font-weight:400}
+.time{font-size:11px;color:var(--sub);font-weight:400}
+.sec{padding:14px 16px 6px;font-size:12px;color:var(--sub)}
+.empty{text-align:center;color:var(--sub);padding:70px 32px;font-size:14px;line-height:1.8}
+.hint{padding:12px 16px;font-size:12.5px;color:var(--sub);line-height:1.6}
+.ico{font-size:20px;width:28px;text-align:center}
+.av{width:44px;height:44px;border-radius:13px;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:24px;flex:none;overflow:hidden}
+.av.sm{width:36px;height:36px;font-size:20px;border-radius:11px}
+.m{display:flex;gap:8px;padding:5px 12px;align-items:flex-start}
+.m.me{flex-direction:row-reverse}
+.mc{max-width:74%}
+.bub{display:inline-block;padding:9px 13px;border-radius:4px 16px 16px 16px;background:var(--card);line-height:1.5;font-size:15px;white-space:pre-wrap;word-break:break-word}
+.m.me .bub{background:var(--accent);color:#fff;border-radius:16px 4px 16px 16px}
+.m.me .mc{text-align:right}
+.who{font-size:11px;color:var(--sub);margin-bottom:2px}
+.sysmsg{text-align:center;font-size:12px;color:var(--sub);padding:8px 24px;line-height:1.5}
+.typing{height:18px;font-size:12px;color:var(--sub);padding:0 16px;flex:none}
+.composer{display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);align-items:flex-end;flex:none}
+.composer textarea{flex:1;border:1px solid var(--line);border-radius:18px;padding:9px 14px;font:inherit;font-size:15px;resize:none;max-height:100px;background:var(--bg);outline:none;color:var(--ink)}
+.composer textarea:focus,.sheet input:focus,.sheet textarea:focus,.sheet select:focus{border-color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:18px;padding:9px 18px;font-size:14px;cursor:pointer;font-family:inherit}
+.btn.ghost{background:var(--accent2);color:var(--accent)}
+.btn.danger{background:#fbe6e3;color:var(--danger)}
+.cover{height:150px;background:linear-gradient(140deg,#2b5cff,#7aa2ff 60%,#bcd0ff);position:relative;margin-bottom:34px}
+.cover .big{position:absolute;right:16px;bottom:-28px;width:64px;height:64px;font-size:34px;border:3px solid #fff;border-radius:16px;background:var(--accent2)}
+.cname{position:absolute;right:92px;bottom:8px;color:#fff;font-weight:650;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.post{display:flex;gap:10px;padding:14px;background:var(--card);border-bottom:1px solid var(--line)}
+.pb{flex:1;min-width:0}
+.nm{color:var(--accent);font-weight:650;font-size:15px}
+.tx{margin:4px 0;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub);margin-top:6px}
+.meta a{margin-left:14px;cursor:pointer;font-size:16px}
+.meta a.del{font-size:12px}
+.inter{background:var(--bg);border-radius:8px;padding:6px 10px;margin-top:8px;font-size:13.5px;line-height:1.65}
+.lk{color:var(--accent);padding-bottom:2px}
+.cm b{color:var(--accent);font-weight:650}
+.chips{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;background:var(--card);flex:none;border-bottom:1px solid var(--line)}
+.chip{flex:none;padding:5px 13px;border-radius:15px;background:var(--bg);font-size:13px;color:var(--sub);cursor:pointer}
+.chip.on{background:var(--accent);color:#fff}
+.fp{background:var(--card);padding:13px 16px;border-bottom:8px solid var(--bg);cursor:pointer}
+.ft{font-weight:650;font-size:15.5px;line-height:1.4}
+.fc{font-size:13.5px;color:#586075;margin-top:5px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fm{display:flex;gap:14px;font-size:12px;color:var(--sub);margin-top:9px}
+.detail{background:var(--card);padding:16px;border-bottom:8px solid var(--bg)}
+.detail h2{font-size:18px;line-height:1.4;margin-bottom:8px}
+.detail .who2{display:flex;gap:10px;align-items:center;margin-bottom:12px;font-size:13px;color:var(--sub)}
+.detail .who2 b{color:var(--ink);display:block;font-size:14px}
+.rp{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+.rp .fl{font-size:11px;color:var(--sub);margin-top:4px}
+.tg{width:42px;height:24px;border-radius:12px;background:#ccd2de;position:relative;flex:none;transition:.2s}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on{background:var(--accent)}
+.tg.on::after{left:21px}
+.tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:6px;background:var(--accent2);color:var(--accent);margin-right:5px}
+.mask{position:absolute;inset:0;background:rgba(10,16,35,.42);display:flex;align-items:flex-end;z-index:50}
+.sheet{width:100%;background:var(--card);border-radius:22px 22px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:88%;overflow-y:auto}
+.sheet h3{font-size:16px;margin-bottom:12px}
+.sheet p.desc{font-size:13.5px;color:var(--sub);line-height:1.6}
+.sheet label{display:block;font-size:12px;color:var(--sub);margin-bottom:10px}
+.sheet input:not([type=checkbox]),.sheet textarea,.sheet select{display:block;width:100%;margin-top:4px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;color:var(--ink);background:var(--bg);outline:none}
+.sheet .chk{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.menu{display:flex;flex-direction:column;gap:8px}
+.menu .btn{border-radius:12px;padding:12px;text-align:left}
+#toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);background:rgba(20,26,45,.9);color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;z-index:99;max-width:86%;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center}
+#toast.on{opacity:1}
+a{color:inherit}
+</style>
+</head>
+<body>
+<div id="phone"><div id="main"></div><nav id="tabs"></nav><div id="toast"></div></div>
+<script>
+/* ============ 工具 ============ */
+const $=(s,e=document)=>e.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const now=()=>Date.now();
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=t=>{const d=new Date(t),n=new Date(),hm=d.toTimeString().slice(0,5);return d.toDateString()===n.toDateString()?hm:(d.getMonth()+1)+'/'+d.getDate()+' '+hm};
+let toastTimer;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove('on'),2200)}
+
+/* ============ 数据存储(localStorage 不可用时退回内存) ============ */
+const KEY='ai-phone-v1',mem={};
+const store={
+  get(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return mem[KEY]?JSON.parse(mem[KEY]):null}},
+  set(v){const s=JSON.stringify(v);try{localStorage.setItem(KEY,s)}catch(e){mem[KEY]=s}}
+};
+const defaults=()=>({
+  settings:{baseUrl:'https://api.openai.com/v1',apiKey:'',model:'gpt-4o-mini',temperature:0.9,history:20},
+  me:{name:'我',avatar:'🙂',persona:''},
+  chars:[
+    {id:'c1',name:'林小满',avatar:'🌿',persona:'24岁插画师,温柔爱笑,喜欢猫和咖啡,说话轻快,偶尔用颜文字。',greeting:'嗨~今天过得怎么样?'},
+    {id:'c2',name:'沈知行',avatar:'🎧',persona:'27岁独立音乐人,毒舌但心软,熬夜党,说话简短带点冷幽默。',greeting:'哟,终于想起我了?'}
+  ],
+  groups:[],chats:{},moments:[],
+  forum:{boards:['综合','日常','世界观讨论'],posts:[]},
+  world:[{id:'w1',title:'示例:城市设定',keys:'城市,星河市',content:'故事发生在沿海城市“星河市”,常年多雨,夜晚霓虹很美。',constant:false,scope:'all',enabled:true}]
+});
+let S=Object.assign(defaults(),store.get()||{});
+const save=()=>store.set(S);
+
+/* ============ 查询助手 ============ */
+const charById=id=>id==='me'?{id:'me',name:S.me.name,avatar:S.me.avatar}
+  :(id&&String(id).startsWith('npc:'))?{id,name:String(id).slice(4),avatar:'👤'}
+  :S.chars.find(c=>c.id===id)||{id,name:'未知',avatar:'❔'};
+const groupById=id=>S.groups.find(g=>g.id===id);
+const isGroup=id=>String(id).startsWith('g_');
+const chatTitle=id=>isGroup(id)?(groupById(id)?.name||'群聊'):charById(id).name;
+const lastMsg=id=>(S.chats[id]||[]).filter(m=>m.role!=='sys').slice(-1)[0];
+const av=(o,cls='')=>`<div class="av ${cls}">${esc(o.avatar||(o.name||'?')[0])}</div>`;
+const charsBrief=()=>S.chars.map(c=>`id=${c.id} 名字=${c.name} 设定=${c.persona}`).join('\n');
+
+/* ============ 世界书:关键词命中 / 常驻 / 按角色限定 ============ */
+function worldFor(charId,text){
+  const hit=S.world.filter(w=>w.enabled&&(w.scope==='all'||w.scope===charId)&&
+    (w.constant||(w.keys||'').split(/[,，、\s]+/).filter(Boolean).some(k=>text.includes(k))));
+  return hit.length?'【世界书】\n'+hit.map(w=>`- ${w.title}:${w.content}`).join('\n'):'';
+}
+
+/* ============ API(OpenAI 兼容格式) ============ */
+async function callAPI(messages,temperature){
+  const st=S.settings;
+  if(!st.apiKey)throw new Error('NOKEY');
+  const url=st.baseUrl.replace(/\/+$/,'')+'/chat/completions';
+  const r=await fetch(url,{method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+st.apiKey},
+    body:JSON.stringify({model:st.model,messages,temperature:temperature??Number(st.temperature)})});
+  if(!r.ok)throw new Error('API '+r.status+':'+(await r.text()).slice(0,160));
+  const j=await r.json();
+  return (j.choices?.[0]?.message?.content||'').trim();
+}
+const errText=e=>e.message==='Failed to fetch'?'请求失败:请检查接口地址,或该服务是否允许浏览器直接调用(CORS)':e.message;
+/* 让模型输出 JSON;没配置 API 时用 fallback 生成演示内容 */
+async function askJSON(prompt,fallback,quiet){
+  try{
+    const t=await callAPI([{role:'system',content:'你是内容生成器,只输出合法JSON,不要markdown代码块,不要多余文字。'},{role:'user',content:prompt}],1);
+    const m=t.match(/[\[{][\s\S]*[\]}]/);
+    return JSON.parse(m?m[0]:t);
+  }catch(e){
+    if(e.message==='NOKEY'){if(!quiet)toast('未配置API,已使用演示内容');return fallback?fallback():null}
+    toast(errText(e).slice(0,80));return null;
+  }
+}
+const DEMO_CHAT=['(演示模式)收到~在「我 → API设置」里填入接口,我就能真正回复啦。','嗯嗯,我在听。(演示模式:还没配置API)','哈哈,继续说~(演示回复)'];
+const DEMO_MOMENTS=['今天天气真好 ☀️','突然好想吃火锅🍲','深夜emo一下…','又是元气满满的一天!'];
+const DEMO_CMTS=['哈哈不错!','我也想去~','赞一个👍','这也太好了吧'];
+const DEMO_REPLIES=['前排围观','楼主说得有道理','我觉得不一定,看情况吧','mark一下,回头细看'];
+const NOKEY_HINT='未配置 API:当前为演示回复。到「我 → API设置」填写后即可真实对话。';
+
+/* ============ 界面基础:弹层 / 表单 ============ */
+const closeSheets=()=>document.querySelectorAll('.mask').forEach(e=>e.remove());
+function sheet(html,onMount){
+  const el=document.createElement('div');el.className='mask';
+  el.innerHTML=`<div class="sheet">${html}</div>`;
+  el.onclick=e=>{if(e.target===el)el.remove()};
+  $('#phone').appendChild(el);
+  onMount&&onMount(el.querySelector('.sheet'),()=>el.remove());
+  return el;
+}
+function askText(title,ph='',val=''){
+  return new Promise(res=>sheet(`<h3>${esc(title)}</h3><textarea id="ta" rows="3" placeholder="${esc(ph)}">${esc(val)}</textarea><div class="row"><button class="btn ghost" data-x="no">取消</button><button class="btn" data-x="ok">确定</button></div>`,(s,close)=>{
+    const ta=$('#ta',s);ta.focus();
+    s.querySelector('[data-x=no]').onclick=()=>{close();res(null)};
+    s.querySelector('[data-x=ok]').onclick=()=>{const v=ta.value.trim();close();res(v||null)};
+  }));
+}
+function askConfirm(msg){
+  return new Promise(res=>sheet(`<h3>${esc(msg)}</h3><div class="row"><button class="btn ghost" data-x="no">取消</button><button class="btn danger" data-x="ok">确定</button></div>`,(s,close)=>{
+    s.querySelector('[data-x=no]').onclick=()=>{close();res(false)};
+    s.querySelector('[data-x=ok]').onclick=()=>{close();res(true)};
+  }));
+}
+/* 通用表单:fields=[{k,label,type:text|area|select|check|number|password,val,opts,ph,rows,step}] */
+function form(title,fields,onOK,btns=[]){
+  const h=fields.map(f=>{
+    const id='f_'+f.k;
+    if(f.type==='area')return `<label>${f.label}<textarea id="${id}" rows="${f.rows||3}" placeholder="${esc(f.ph||'')}">${esc(f.val??'')}</textarea></label>`;
+    if(f.type==='select')return `<label>${f.label}<select id="${id}">${f.opts.map(o=>`<option value="${esc(o[0])}" ${o[0]==f.val?'selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
+    if(f.type==='check')return `<label class="chk"><input type="checkbox" id="${id}" ${f.val?'checked':''}> ${f.label}</label>`;
+    return `<label>${f.label}<input id="${id}" type="${f.type||'text'}" ${f.step?`step="${f.step}"`:''} placeholder="${esc(f.ph||'')}" value="${esc(f.val??'')}"></label>`;
+  }).join('');
+  sheet(`<h3>${title}</h3>${h}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'ghost'}" data-b="${i}">${b.label}</button>`).join('')}<button class="btn ghost" data-x="no">取消</button><button class="btn" data-x="ok">保存</button></div>`,(s,close)=>{
+    const get=()=>{const o={};fields.forEach(f=>{const e=s.querySelector('#f_'+f.k);o[f.k]=f.type==='check'?e.checked:e.value});return o};
+    s.querySelector('[data-x=no]').onclick=close;
+    s.querySelector('[data-x=ok]').onclick=()=>{if(onOK(get())!==false)close()};
+    btns.forEach((b,i)=>s.querySelector(`[data-b="${i}"]`).onclick=()=>b.fn(get(),close));
+  });
+}
+
+/* ============ 聊天(单聊 + 群聊) ============ */
+let chatBusy=false;
+const setTyping=b=>{const t=$('#typing');if(t)t.textContent=b?'对方正在输入…':''};
+function sendMsg(id,text){isGroup(id)?sendGroup(id,text):sendChat(id,text)}
+
+async function sendChat(cid,text){
+  const c=charById(cid),log=S.chats[cid]=S.chats[cid]||[];
+  log.push({role:'user',content:text,time:now()});save();refresh();
+  chatBusy=true;setTyping(true);
+  try{
+    const recent=log.filter(m=>m.role!=='sys').slice(-S.settings.history);
+    const ctx=recent.map(m=>m.content).join('\n');
+    const sys=`你正在扮演「${c.name}」,与用户「${S.me.name}」在手机上聊天。\n角色设定:${c.persona}\n用户设定:${S.me.persona||'无'}\n${worldFor(cid,ctx)}\n要求:\n- 完全以角色身份,用自然的微信聊天口吻回复,不要旁白,不要说自己是AI。\n- 每条简短;想分成多条消息时用 ||| 分隔,最多3条。`;
+    const reply=await callAPI([{role:'system',content:sys},...recent.map(m=>({role:m.role,content:m.content}))]);
+    reply.split('|||').map(s=>s.trim()).filter(Boolean).forEach(s=>log.push({role:'assistant',content:s,time:now()}));
+  }catch(e){
+    if(e.message==='NOKEY'){
+      log.push({role:'assistant',content:pick(DEMO_CHAT),time:now()});
+      if(!log.some(m=>m.role==='sys'&&m.content.startsWith('未配置')))log.push({role:'sys',content:NOKEY_HINT,time:now()});
+    }else log.push({role:'sys',content:'出错了:'+errText(e),time:now()});
+  }
+  chatBusy=false;setTyping(false);save();refresh();
+}
+
+async function sendGroup(gid,text){
+  const g=groupById(gid),log=S.chats[gid]=S.chats[gid]||[];
+  log.push({role:'user',content:text,time:now()});save();refresh();
+  chatBusy=true;setTyping(true);
+  const members=g.members.map(charById);
+  const transcript=log.filter(m=>m.role!=='sys').slice(-S.settings.history).map(m=>(m.role==='user'?S.me.name:charById(m.from).name)+':'+m.content).join('\n');
+  const data=await askJSON(`这是一个微信群「${g.name}」,成员:\n${members.map(c=>`id=${c.id} 名字=${c.name} 设定=${c.persona}`).join('\n')}\n用户「${S.me.name}」的设定:${S.me.persona||'无'}\n${worldFor('',transcript)}\n最近聊天记录:\n${transcript}\n请让2-4位合适的成员依次回复用户的最新消息,符合各自性格,口语化、简短,成员之间可以互相接话。\n输出JSON数组:[{"id":"成员id","text":"内容"}]`,
+    ()=>members.slice(0,2).map(c=>({id:c.id,text:pick(DEMO_CHAT)})),true);
+  if(Array.isArray(data)){
+    data.forEach(d=>{if(g.members.includes(d.id)&&d.text)log.push({role:'assistant',from:d.id,content:String(d.text),time:now()})});
+    if(!S.settings.apiKey&&!log.some(m=>m.role==='sys'&&m.content.startsWith('未配置')))log.push({role:'sys',content:NOKEY_HINT,time:now()});
+  }
+  chatBusy=false;setTyping(false);save();refresh();
+}
+
+function renderMsgs(){
+  const box=$('#msgs');if(!box||ui.page?.type!=='chat')return;
+  const id=ui.page.id,g=isGroup(id);
+  box.innerHTML=(S.chats[id]||[]).map(m=>{
+    if(m.role==='sys')return `<div class="sysmsg">${esc(m.content)}</div>`;
+    if(m.role==='user')return `<div class="m me">${av(S.me,'sm')}<div class="mc"><div class="bub">${esc(m.content)}</div></div></div>`;
+    const a=charById(m.from||id);
+    return `<div class="m">${av(a,'sm')}<div class="mc">${g?`<div class="who">${esc(a.name)}</div>`:''}<div class="bub">${esc(m.content)}</div></div></div>`;
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ============ 朋友圈 ============ */
+let busy=false;
+async function withBusy(label,fn){
+  if(busy){toast('上一个任务还在进行…');return}
+  busy=true;toast(label);
+  try{await fn()}finally{busy=false}
+}
+async function genMoments(){
+  await withBusy('好友们正在发动态…',async()=>{
+    if(!S.chars.length)return toast('先添加好友');
+    const recent=S.moments.slice(-5).map(m=>charById(m.authorId).name+':'+m.text).join('\n');
+    const data=await askJSON(`请为下列每个角色各写一条朋友圈动态(口语化,1-3句,可带emoji和生活细节,符合各自性格,彼此不要重复)。\n${charsBrief()}\n${worldFor('',S.chars.map(c=>c.persona).join(' '))}\n最近已有动态(避免重复):\n${recent||'无'}\n输出JSON数组:[{"id":"角色id","text":"内容"}]`,
+      ()=>S.chars.map(c=>({id:c.id,text:pick(DEMO_MOMENTS)})));
+    (Array.isArray(data)?data:[]).forEach(d=>{
+      if(!S.chars.find(c=>c.id===d.id)||!d.text)return;
+      const likes=S.chars.filter(c=>c.id!==d.id&&Math.random()<.4).map(c=>c.id);
+      S.moments.push({id:uid(),authorId:d.id,text:String(d.text),time:now()-Math.floor(Math.random()*3600e3),likes,comments:[]});
+    });
+    save();refresh();toast('已更新');
+  });
+}
+async function reactMoment(p){
+  if(!S.chars.length)return;
+  const data=await askJSON(`用户「${S.me.name}」(设定:${S.me.persona||'无'})发了一条朋友圈:「${p.text}」。\n请从下列角色中挑1-3位点赞并评论(评论口语化、简短、符合性格)。\n${charsBrief()}\n${worldFor('',p.text)}\n输出JSON数组:[{"id":"角色id","text":"评论"}]`,
+    ()=>S.chars.slice(0,2).map(c=>({id:c.id,text:pick(DEMO_CMTS)})),true);
+  (Array.isArray(data)?data:[]).forEach(d=>{
+    if(!S.chars.find(c=>c.id===d.id)||!d.text)return;
+    if(!p.likes.includes(d.id))p.likes.push(d.id);
+    p.comments.push({authorId:d.id,text:String(d.text),time:now()});
+  });
+  save();refresh();
+}
+async function replyComment(p,text){
+  if(p.authorId==='me'||!S.settings.apiKey)return;
+  const a=charById(p.authorId);
+  const d=await askJSON(`你是「${a.name}」(设定:${a.persona})。你发了朋友圈:「${p.text}」,用户「${S.me.name}」评论:「${text}」。请以角色身份回复这条评论,一两句话。\n${worldFor(a.id,p.text+text)}\n输出JSON:{"text":"回复"}`,null,true);
+  if(d?.text){p.comments.push({authorId:p.authorId,text:String(d.text),time:now()});save();refresh()}
+}
+function postHTML(p){
+  const a=charById(p.authorId),likes=p.likes.map(i=>charById(i).name).join('、');
+  return `<div class="post">${av(a)}<div class="pb"><div class="nm">${esc(a.name)}</div><div class="tx">${esc(p.text)}</div>
+  <div class="meta"><span>${fmt(p.time)}</span><span>${p.authorId==='me'?`<a class="del" data-act="mdel" data-id="${p.id}">删除</a>`:''}<a data-act="like" data-id="${p.id}">${p.likes.includes('me')?'❤️':'🤍'}</a><a data-act="cmt" data-id="${p.id}">💬</a></span></div>
+  ${(likes||p.comments.length)?`<div class="inter">${likes?`<div class="lk">❤ ${esc(likes)}</div>`:''}${p.comments.map(c=>`<div class="cm"><b>${esc(charById(c.authorId).name)}</b>:${esc(c.text)}</div>`).join('')}</div>`:''}</div></div>`;
+}
+
+/* ============ 论坛 ============ */
+const DEMO_POSTS=b=>[
+  {id:'npc:路人甲',title:`【${b}】新人报到,大家多关照`,content:'刚来的,先逛逛。(演示内容:配置API后这里会由模型生成)'},
+  {id:'npc:夜猫子',title:'有没有人也睡不着?',content:'凌晨三点,在线的扣1。'}
+];
+async function genForum(){
+  await withBusy('网友们正在刷帖…',async()=>{
+    const board=ui.board==='全部'?pick(S.forum.boards):ui.board;
+    const titles=S.forum.posts.slice(-8).map(p=>p.title).join(' / ');
+    const data=await askJSON(`论坛板块「${board}」。请生成3个有趣的新帖子(标题+正文2-4句)。作者可以是下列角色(用其id),也可以是虚构的路人网友(用"npc:昵称")。语气像真实论坛,可以有梗、争论、求助。\n${charsBrief()}\n${worldFor('',board+titles+S.chars.map(c=>c.persona).join(' '))}\n已有帖子标题(避免重复):${titles||'无'}\n输出JSON数组:[{"id":"作者","title":"标题","content":"正文"}]`,()=>DEMO_POSTS(board));
+    (Array.isArray(data)?data:[]).forEach(d=>{
+      if(!d.title)return;
+      const ok=S.chars.find(c=>c.id===d.id)||String(d.id).startsWith('npc:');
+      S.forum.posts.push({id:uid(),board,authorId:ok?d.id:'npc:匿名网友',title:String(d.title),content:String(d.content||''),time:now()-Math.floor(Math.random()*7200e3),replies:[]});
+    });
+    save();refresh();toast('刷到新帖子了');
+  });
+}
+async function genReplies(p,quiet){
+  const ctx=p.replies.slice(-6).map(r=>charById(r.authorId).name+':'+r.text).join('\n');
+  const data=await askJSON(`论坛帖子「${p.title}」(板块${p.board},楼主${charById(p.authorId).name}):${p.content}\n已有回复:\n${ctx||'无'}\n请生成2-4条新回复,可来自下列角色(用id)或路人网友("npc:昵称"),可互相接话、玩梗、抬杠,每条1-2句。\n${charsBrief()}\n${worldFor('',p.title+p.content+ctx)}\n输出JSON数组:[{"id":"作者","text":"回复"}]`,
+    ()=>[{id:'npc:吃瓜群众',text:pick(DEMO_REPLIES)}],quiet);
+  (Array.isArray(data)?data:[]).forEach(d=>{
+    if(!d.text)return;
+    const ok=S.chars.find(c=>c.id===d.id)||String(d.id).startsWith('npc:');
+    p.replies.push({id:uid(),authorId:ok?d.id:'npc:路人',text:String(d.text),time:now()});
+  });
+  save();refresh();
+}
+function renderPost(){
+  const box=$('#pbody');if(!box||ui.page?.type!=='post')return;
+  const p=S.forum.posts.find(x=>x.id===ui.page.id);if(!p)return;
+  const a=charById(p.authorId);
+  box.innerHTML=`<div class="detail"><h2>${esc(p.title)}</h2><div class="who2">${av(a,'sm')}<div><b>${esc(a.name)}</b>${esc(p.board)} · ${fmt(p.time)}</div></div><div class="tx">${esc(p.content)}</div></div>`+
+  (p.replies.length?p.replies.map((r,i)=>{const b=charById(r.authorId);return `<div class="rp">${av(b,'sm')}<div class="grow"><div class="nm" style="font-size:13px">${esc(b.name)}</div><div class="tx" style="font-size:14.5px">${esc(r.text)}</div><div class="fl">${i+2} 楼 · ${fmt(r.time)}</div></div></div>`}).join(''):empty('还没有回复,来抢沙发,或点右上角 🤖 召唤网友'));
+}
+
+/* ============ 页面渲染 ============ */
+const ui={tab:'chats',page:null,board:'全部'};
+const TABS=[['chats','消息','💬'],['social','社交圈','👥'],['moments','朋友圈','🌅'],['forum','论坛','📋'],['me','我','🙂']];
+const bar=(title,o={})=>`<div class="bar">${o.back?'<button data-act="back">‹</button>':''}<h1>${esc(title)}</h1>${o.right||''}</div>`;
+const empty=t=>`<div class="empty">${esc(t)}</div>`;
+
+const views={
+  chats(){
+    const items=[...S.chars.map(c=>({id:c.id,name:c.name,a:c.avatar})),...S.groups.map(g=>({id:g.id,name:g.name,a:'👥'}))]
+      .map(x=>({...x,l:lastMsg(x.id)})).sort((a,b)=>(b.l?.time||0)-(a.l?.time||0));
+    return bar('消息')+`<div class="scroll">${items.length?items.map(x=>`<div class="item" data-act="chat" data-id="${x.id}"><div class="av">${esc(x.a)}</div><div class="grow"><div class="t1">${esc(x.name)}<span class="time">${x.l?fmt(x.l.time):''}</span></div><div class="t2">${esc(x.l?x.l.content:'点击开始聊天')}</div></div></div>`).join(''):empty('还没有联系人,到「社交圈」添加好友')}</div>`;
+  },
+  social(){
+    return bar('社交圈',{right:'<button data-act="socialadd">＋</button>'})+`<div class="scroll">
+    ${S.groups.length?'<div class="sec">群聊</div>'+S.groups.map(g=>`<div class="item" data-act="chat" data-id="${g.id}"><div class="av">👥</div><div class="grow"><div class="t1">${esc(g.name)}</div><div class="t2">${esc(g.members.map(i=>charById(i).name).join('、'))}</div></div></div>`).join(''):''}
+    <div class="sec">好友(${S.chars.length})</div>
+    ${S.chars.length?S.chars.map(c=>`<div class="item" data-act="contact" data-id="${c.id}">${av(c)}<div class="grow"><div class="t1">${esc(c.name)}</div><div class="t2">${esc(c.persona)}</div></div></div>`).join(''):empty('点右上角 ＋ 新建或让 AI 生成好友')}</div>`;
+  },
+  moments(){
+    const posts=[...S.moments].sort((a,b)=>b.time-a.time);
+    return bar('朋友圈',{right:'<button data-act="mgen">✨</button><button data-act="mpost">✏️</button>'})+`<div class="scroll"><div class="cover"><div class="cname">${esc(S.me.name)}</div><div class="av big">${esc(S.me.avatar)}</div></div>${posts.length?posts.map(postHTML).join(''):empty('还没有动态。点 ✨ 让好友发动态,或点 ✏️ 自己发一条')}</div>`;
+  },
+  forum(){
+    const boards=['全部',...S.forum.boards];
+    const posts=S.forum.posts.filter(p=>ui.board==='全部'||p.board===ui.board).sort((a,b)=>b.time-a.time);
+    return bar('论坛',{right:'<button data-act="fgen">✨</button><button data-act="fpost">✏️</button>'})+`<div class="chips">${boards.map(b=>`<span class="chip ${b===ui.board?'on':''}" data-act="fboard" data-id="${esc(b)}">${esc(b)}</span>`).join('')}<span class="chip" data-act="fnewboard">＋板块</span></div><div class="scroll">${posts.length?posts.map(p=>`<div class="fp" data-act="fopen" data-id="${p.id}"><div class="ft">${esc(p.title)}</div><div class="fc">${esc(p.content)}</div><div class="fm"><span>${esc(charById(p.authorId).name)}</span><span>${esc(p.board)}</span><span>💬 ${p.replies.length}</span><span>${fmt(p.time)}</span></div></div>`).join(''):empty('这个板块还很冷清。点 ✨ 让大家来刷帖,或点 ✏️ 发第一帖')}</div>`;
+  },
+  me(){
+    return bar('我')+`<div class="scroll">
+    <div class="item" data-act="mprofile">${av(S.me)}<div class="grow"><div class="t1">${esc(S.me.name)}</div><div class="t2">${esc(S.me.persona||'点击编辑昵称与人设')}</div></div></div>
+    <div class="sec">设置</div>
+    <div class="item" data-act="msettings"><span class="ico">🔌</span><div class="grow">API 设置<div class="t2">${S.settings.apiKey?esc(S.settings.model):'未配置(演示模式)'}</div></div>›</div>
+    <div class="item" data-act="mworld"><span class="ico">📖</span><div class="grow">世界书<div class="t2">${S.world.filter(w=>w.enabled).length} 条生效</div></div>›</div>
+    <div class="sec">数据</div>
+    <div class="item" data-act="mexport"><span class="ico">📤</span><div class="grow">导出数据</div>›</div>
+    <div class="item" data-act="mimport"><span class="ico">📥</span><div class="grow">导入数据</div>›</div>
+    <div class="item" data-act="mreset"><span class="ico">🗑️</span><div class="grow" style="color:var(--danger)">清空所有数据</div></div></div>`;
+  }
+};
+const pages={
+  chat(m){
+    const id=ui.page.id;
+    m.innerHTML=bar(chatTitle(id),{back:true,right:'<button data-act="chatmenu">⋯</button>'})+'<div id="msgs" class="scroll"></div><div id="typing" class="typing"></div><div class="composer"><textarea id="inp" rows="1" placeholder="输入消息…"></textarea><button class="btn" id="send">发送</button></div>';
+    const inp=$('#inp',m);
+    const go=()=>{const v=inp.value.trim();if(!v)return;if(chatBusy)return toast('对方还在输入…');inp.value='';inp.style.height='';sendMsg(id,v)};
+    $('#send',m).onclick=go;
+    inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();go()}};
+    inp.oninput=()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,100)+'px'};
+    renderMsgs();
+  },
+  post(m){
+    m.innerHTML=bar('帖子',{back:true,right:'<button data-act="fsummon">🤖</button>'})+'<div class="scroll" id="pbody"></div><div class="composer"><textarea id="rin" rows="1" placeholder="回复…"></textarea><button class="btn" id="rsend">回复</button></div>';
+    const rin=$('#rin',m),p=S.forum.posts.find(x=>x.id===ui.page.id);
+    const go=()=>{const v=rin.value.trim();if(!v||!p)return;rin.value='';p.replies.push({id:uid(),authorId:'me',text:v,time:now()});save();renderPost();$('#pbody').scrollTop=1e9;if(S.settings.apiKey)genReplies(p,true)};
+    $('#rsend',m).onclick=go;
+    rin.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();go()}};
+    renderPost();
+  },
+  world(m){
+    m.innerHTML=bar('世界书',{back:true,right:'<button data-act="wnew">＋</button>'})+`<div class="scroll"><div class="hint">命中关键词的条目,会在聊天、朋友圈、论坛生成时自动加入提示词。「常驻」条目始终生效,作用范围可限定到某个好友。</div>${S.world.length?S.world.map(w=>`<div class="item" data-act="wedit" data-id="${w.id}"><div class="grow"><div class="t1">${esc(w.title)}</div><div class="t2">${w.constant?'<span class="tag">常驻</span>':''}${w.scope==='all'?'<span class="tag">全局</span>':`<span class="tag">${esc(charById(w.scope).name)}</span>`}${esc(w.keys||'无关键词')}</div></div><span class="tg ${w.enabled?'on':''}" data-act="wtoggle" data-id="${w.id}"></span></div>`).join(''):empty('还没有条目,点右上角 ＋ 添加')}</div>`;
+  }
+};
+function render(){
+  const m=$('#main'),tabs=$('#tabs');
+  if(ui.page){tabs.style.display='none';pages[ui.page.type](m);return}
+  tabs.style.display='flex';
+  tabs.innerHTML=TABS.map(t=>`<button class="${ui.tab===t[0]?'on':''}" data-act="tab" data-id="${t[0]}"><i>${t[2]}</i>${t[1]}</button>`).join('');
+  m.innerHTML=views[ui.tab]();
+}
+/* 局部刷新:聊天页/帖子页不重建输入框 */
+function refresh(){
+  if(ui.page?.type==='chat')renderMsgs();
+  else if(ui.page?.type==='post')renderPost();
+  else render();
+}
+
+/* ============ 表单:好友 / 群聊 / 世界书 / 设置 ============ */
+function charForm(c){
+  form(c?'编辑好友':'新建好友',[
+    {k:'name',label:'名字',val:c?.name},
+    {k:'avatar',label:'头像(一个 emoji 或文字)',val:c?.avatar||'🙂'},
+    {k:'persona',label:'人设(性格、背景、说话风格)',type:'area',rows:5,val:c?.persona},
+    {k:'greeting',label:'开场白(第一次聊天时发送)',val:c?.greeting}
+  ],o=>{
+    if(!o.name.trim()){toast('名字不能为空');return false}
+    if(c)Object.assign(c,o);else S.chars.push({id:'c'+uid(),...o});
+    save();refresh();
+  });
+}
+function groupForm(){
+  if(S.chars.length<2)return toast('至少要有 2 位好友才能建群');
+  form('创建群聊',[{k:'name',label:'群名',val:'快乐小群'},...S.chars.map(c=>({k:'m_'+c.id,label:c.avatar+' '+c.name,type:'check',val:true}))],o=>{
+    const members=S.chars.filter(c=>o['m_'+c.id]).map(c=>c.id);
+    if(!o.name.trim()||members.length<2){toast('需要群名和至少 2 位成员');return false}
+    S.groups.push({id:'g_'+uid(),name:o.name.trim(),members});save();refresh();
+  });
+}
+function worldForm(w){
+  form(w?'编辑条目':'新建条目',[
+    {k:'title',label:'标题',val:w?.title},
+    {k:'keys',label:'触发关键词(逗号分隔)',val:w?.keys,ph:'例如:星河市,雨夜'},
+    {k:'content',label:'内容',type:'area',rows:5,val:w?.content},
+    {k:'scope',label:'作用范围',type:'select',val:w?.scope||'all',opts:[['all','全局(所有好友)'],...S.chars.map(c=>[c.id,'仅 '+c.name])]},
+    {k:'constant',label:'常驻(无需关键词,始终加入)',type:'check',val:w?.constant},
+    {k:'enabled',label:'启用',type:'check',val:w?w.enabled:true}
+  ],o=>{
+    if(!o.title.trim()||!o.content.trim()){toast('标题和内容必填');return false}
+    if(w)Object.assign(w,o);else S.world.push({id:uid(),...o});
+    save();refresh();
+  },w?[{label:'删除',cls:'danger',fn:(_,close)=>{S.world=S.world.filter(x=>x!==w);save();close();refresh()}}]:[]);
+}
+const readSettings=o=>({baseUrl:o.baseUrl.trim(),apiKey:o.apiKey.trim(),model:o.model.trim(),temperature:Number(o.temperature)||0.9,history:parseInt(o.history)||20});
+
+/* ============ 点击事件 ============ */
+const acts={
+  tab(d){ui.tab=d.id;render()},
+  back(){ui.page=null;render()},
+  chat(d){
+    ui.page={type:'chat',id:d.id};
+    const log=S.chats[d.id]=S.chats[d.id]||[];
+    if(!log.length&&!isGroup(d.id)){const c=charById(d.id);if(c.greeting)log.push({role:'assistant',content:c.greeting,time:now()})}
+    save();render();
+  },
+  chatmenu(){
+    const id=ui.page.id;
+    sheet(`<h3>${esc(chatTitle(id))}</h3><div class="menu"><button class="btn ghost" data-act="chatclear">清空聊天记录</button>${isGroup(id)?'<button class="btn danger" data-act="groupdel">解散群聊</button>':''}</div>`);
+  },
+  chatclear(){S.chats[ui.page.id]=[];save();refresh();toast('已清空')},
+  async groupdel(){
+    if(!await askConfirm('解散这个群聊?'))return;
+    const id=ui.page.id;S.groups=S.groups.filter(g=>g.id!==id);delete S.chats[id];ui.page=null;save();render();
+  },
+  socialadd(){
+    sheet('<h3>添加</h3><div class="menu"><button class="btn ghost" data-act="cnew">✏️ 手动新建好友</button><button class="btn ghost" data-act="cgen">✨ AI 生成好友</button><button class="btn ghost" data-act="gnew">👥 创建群聊</button></div>');
+  },
+  cnew(){charForm()},
+  gnew(){groupForm()},
+  async cgen(){
+    const kw=await askText('想要什么样的朋友?','例如:住在隔壁的神秘作家(可留空,随机生成)');
+    if(kw===null)return;
+    await withBusy('正在生成好友…',async()=>{
+      const d=await askJSON(`请创作一个适合在手机里聊天的虚构角色。要求:${kw||'随机,有个性、有记忆点'}。\n已有好友:${S.chars.map(c=>c.name).join('、')||'无'}(不要重名)\n${worldFor('',kw)}\n输出JSON:{"name":"名字","avatar":"一个emoji","persona":"80字以内的人设,含性格与说话风格","greeting":"第一次聊天的开场白"}`,
+        ()=>({name:pick(['阿澈','苏晚','周小棠']),avatar:pick(['🦊','🌙','🍵']),persona:'(演示角色)性格随和,爱聊天。',greeting:'你好呀~'}));
+      if(d?.name){S.chars.push({id:'c'+uid(),name:String(d.name),avatar:String(d.avatar||'🙂'),persona:String(d.persona||''),greeting:String(d.greeting||'')});save();refresh();toast('新好友 '+d.name+' 已加入')}
+    });
+  },
+  contact(d){
+    const c=charById(d.id);
+    sheet(`<h3>${esc(c.avatar)} ${esc(c.name)}</h3><p class="desc">${esc(c.persona||'暂无人设')}</p><div class="row"><button class="btn danger" data-act="cdel" data-id="${c.id}">删除</button><button class="btn ghost" data-act="cedit" data-id="${c.id}">编辑</button><button class="btn" data-act="chat" data-id="${c.id}">发消息</button></div>`);
+  },
+  cedit(d){charForm(S.chars.find(c=>c.id===d.id))},
+  async cdel(d){
+    if(!await askConfirm('删除这位好友及其聊天记录?'))return;
+    S.chars=S.chars.filter(c=>c.id!==d.id);delete S.chats[d.id];
+    S.groups.forEach(g=>g.members=g.members.filter(i=>i!==d.id));save();refresh();
+  },
+  /* 朋友圈 */
+  mgen(){genMoments()},
+  async mpost(){
+    const t=await askText('发表朋友圈','这一刻的想法…');if(!t)return;
+    const p={id:uid(),authorId:'me',text:t,time:now(),likes:[],comments:[]};
+    S.moments.push(p);save();refresh();reactMoment(p);
+  },
+  like(d){const p=S.moments.find(x=>x.id===d.id),i=p.likes.indexOf('me');i<0?p.likes.push('me'):p.likes.splice(i,1);save();refresh()},
+  async cmt(d){
+    const p=S.moments.find(x=>x.id===d.id);
+    const t=await askText('评论');if(!t)return;
+    p.comments.push({authorId:'me',text:t,time:now()});save();refresh();replyComment(p,t);
+  },
+  mdel(d){S.moments=S.moments.filter(x=>x.id!==d.id);save();refresh()},
+  /* 论坛 */
+  fboard(d){ui.board=d.id;render()},
+  async fnewboard(){const t=await askText('新板块名称');if(t&&!S.forum.boards.includes(t)){S.forum.boards.push(t);ui.board=t;save();render()}},
+  fgen(){genForum()},
+  fpost(){
+    form('发帖',[
+      {k:'board',label:'板块',type:'select',val:S.forum.boards.includes(ui.board)?ui.board:S.forum.boards[0],opts:S.forum.boards.map(b=>[b,b])},
+      {k:'title',label:'标题'},{k:'content',label:'正文',type:'area',rows:5}
+    ],o=>{
+      if(!o.title.trim()){toast('标题不能为空');return false}
+      const p={id:uid(),board:o.board,authorId:'me',title:o.title.trim(),content:o.content.trim(),time:now(),replies:[]};
+      S.forum.posts.push(p);save();refresh();
+      if(S.settings.apiKey)genReplies(p,true);
+    });
+  },
+  fopen(d){ui.page={type:'post',id:d.id};render()},
+  fsummon(){const p=S.forum.posts.find(x=>x.id===ui.page.id);if(p)withBusy('网友赶来围观…',()=>genReplies(p))},
+  /* 世界书 */
+  mworld(){ui.page={type:'world'};render()},
+  wnew(){worldForm()},
+  wedit(d){worldForm(S.world.find(w=>w.id===d.id))},
+  wtoggle(d){const w=S.world.find(x=>x.id===d.id);w.enabled=!w.enabled;save();render()},
+  /* 我 */
+  mprofile(){
+    form('我的资料',[
+      {k:'name',label:'昵称',val:S.me.name},
+      {k:'avatar',label:'头像(emoji 或文字)',val:S.me.avatar},
+      {k:'persona',label:'我的人设(角色会据此和你互动)',type:'area',rows:4,val:S.me.persona,ph:'例如:大学生,养了一只橘猫,喜欢摄影'}
+    ],o=>{if(!o.name.trim()){toast('昵称不能为空');return false}S.me=o;save();refresh()});
+  },
+  msettings(){
+    const st=S.settings;
+    form('API 设置',[
+      {k:'baseUrl',label:'接口地址(OpenAI 兼容,不含 /chat/completions)',val:st.baseUrl},
+      {k:'apiKey',label:'API Key',type:'password',val:st.apiKey},
+      {k:'model',label:'模型名称',val:st.model},
+      {k:'temperature',label:'temperature(越高越发散)',type:'number',step:'0.1',val:st.temperature},
+      {k:'history',label:'每次带入的历史消息条数',type:'number',val:st.history}
+    ],o=>{S.settings=readSettings(o);save();refresh();toast('已保存')},
+    [{label:'测试连接',fn:async o=>{
+      S.settings=readSettings(o);save();toast('测试中…');
+      try{await callAPI([{role:'user',content:'回复 ok'}]);toast('连接成功 ✅')}
+      catch(e){toast(e.message==='NOKEY'?'请先填写 API Key':errText(e).slice(0,90))}
+    }}]);
+  },
+  mexport(){
+    const c=JSON.parse(JSON.stringify(S));c.settings.apiKey='';
+    const j=JSON.stringify(c,null,1);
+    sheet(`<h3>导出数据(不含 API Key)</h3><textarea rows="8" readonly id="ex">${esc(j)}</textarea><div class="row"><button class="btn ghost" data-x="dl">下载文件</button><button class="btn" data-x="cp">复制</button></div>`,s=>{
+      s.querySelector('[data-x=cp]').onclick=()=>{
+        $('#ex',s).select();
+        try{navigator.clipboard.writeText(j).then(()=>toast('已复制'),()=>{document.execCommand('copy');toast('已复制')})}catch(e){document.execCommand('copy');toast('已复制')}
+      };
+      s.querySelector('[data-x=dl]').onclick=()=>{
+        const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));
+        a.download='ai-phone-backup.json';a.click();
+      };
+    });
+  },
+  mimport(){
+    sheet('<h3>导入数据</h3><textarea rows="8" id="im" placeholder="粘贴导出的 JSON"></textarea><div class="row"><button class="btn ghost" data-x="no">取消</button><button class="btn" data-x="ok">导入并覆盖</button></div>',(s,close)=>{
+      s.querySelector('[data-x=no]').onclick=close;
+      s.querySelector('[data-x=ok]').onclick=()=>{
+        try{
+          const p=JSON.parse($('#im',s).value);
+          const d=defaults();
+          S={...d,...p,settings:{...d.settings,...p.settings,apiKey:S.settings.apiKey||p.settings?.apiKey||''}};
+          save();close();render();toast('导入成功');
+        }catch(e){toast('JSON 格式不正确')}
+      };
+    });
+  },
+  async mreset(){
+    if(!await askConfirm('清空所有数据(含好友、聊天、动态、论坛、世界书、API 设置)?'))return;
+    S=defaults();save();ui.tab='chats';ui.page=null;render();toast('已清空');
+  }
+};
+$('#phone').addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const f=acts[t.dataset.act];if(!f)return;
+  if(t.closest('.sheet'))closeSheets();
+  f(t.dataset,t,e);
+});
+render();
+</script>
+</body>
+</html>
